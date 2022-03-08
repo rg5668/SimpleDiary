@@ -67,7 +67,6 @@ const reducer = (state, action) => {
 
 // 전역적으로 데이터를 사용할수있는
 // export만 쓰면 여러개를 쓸 수 있다. (default는 하나만 가능)
-// 기본적으로 App을 내보내고 있다.
 export const DiaryStateContext = React.createContext();
 
 // dispatch를 내보내기 위한 Context
