@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
@@ -32,9 +38,50 @@ import DiaryList from "./DiaryList";
 // API호출
 // https://jsonplaceholder.typicode.com/comments
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const created_date = new Date().getDate();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+    }
+    default:
+      return state;
+  }
+};
+
+// 전역적으로 데이터를 사용할수있는
+// export만 쓰면 여러개를 쓸 수 있다. (default는 하나만 가능)
+// 기본적으로 App을 내보내고 있다.
+export const DiaryStateContext = React.createContext();
+
+// dispatch를 내보내기 위한 Context
+export const DiaryDispatchContext = React.createContext();
+
+// ------------------------------APP-------------------------------------------
 function App() {
   // 전역 상태 관리 (추가,삭제,수정)
-  const [data, setData] = useState([]);
+  // react hooks
+  // const [data, setData] = useState([]);
+
+  // react reducer
+  // 복잡한 상태변호를 따로 빼기 위해 reducer를 쓴다.
+  const [data, dispatch] = useReducer(reducer, []);
 
   // id값
   const dataId = useRef(0);
@@ -55,7 +102,9 @@ function App() {
         id: dataId.current++,
       };
     });
-    setData(initData);
+    // reducer
+    dispatch({ type: "INIT", data: initData });
+    // setData(initData);
     // console.log(res);
   };
 
@@ -67,18 +116,25 @@ function App() {
   // 생성
   // useCallback 만들었던 함수 한번만 작동하게 (Editor 랜더안되게)
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: dataId.current },
+    });
+
+    // const created_date = new Date().getTime();
+    // const newItem = {
+    //   author,
+    //   content,
+    //   emotion,
+    //   created_date,
+    //   id: dataId.current,
+    // };
+
     dataId.current += 1;
+
     // setData([newItem, ...data]);
     // 함수형 업데이트
-    setData((data) => [newItem, ...data]);
+    // setData((data) => [newItem, ...data]);
   }, []);
 
   // 삭제
@@ -90,16 +146,24 @@ function App() {
     // console.log(newDiaryList);
     // setData(newDiaryList);
     // data에 최신 state
-    setData((data) => data.filter((it) => it.id !== targetId));
+
+    dispatch({ type: "REMOVE", targetId });
+    // setData((data) => data.filter((it) => it.id !== targetId));
   }, []);
 
   // 수정
   const onEidt = useCallback((targetId, newContent) => {
-    setData((data) =>
-      data.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
+    dispatch({ type: "EDIT", targetId, newContent });
+    // setData((data) =>
+    //   data.map((it) =>
+    //     it.id === targetId ? { ...it, content: newContent } : it
+    //   )
+    // );
+  }, []);
+
+  // 재생성을 막기 위해 useMemo를 활용한다. (최적화)
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onEidt, onRemove };
   }, []);
 
   // Memoization(useMemo) (연산 기억 후 똑같은 문제일 경우 연산하지 않고 바로 출력)
@@ -118,16 +182,25 @@ function App() {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
-    <div className="App">
-      {/* <OptimizeTest /> */}
-      {/* <Lifecycle /> */}
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기 : {data.length}</div>
-      <div>기분 좋은 일기 개수 : {goodCount}</div>
-      <div>기분 나쁜 일기 개수 : {badCount}</div>
-      <div>기분 좋은 길기 비율 : {goodRatio}</div>
-      <DiaryList onEidt={onEidt} onRemove={onRemove} dummyList={data} />
-    </div>
+    // <DiaryStateContext.Provider> 공급자 컴퍼넌트
+    <DiaryStateContext.Provider value={data}>
+      {/* DiaryDispatchContext (재생성되지 않는) */}
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          {/* <OptimizeTest /> */}
+          {/* <Lifecycle /> */}
+          <DiaryEditor />
+          {/* onCreate={onCreate} */}
+          <div>전체 일기 : {data.length}</div>
+          <div>기분 좋은 일기 개수 : {goodCount}</div>
+          <div>기분 나쁜 일기 개수 : {badCount}</div>
+          <div>기분 좋은 길기 비율 : {goodRatio}</div>
+
+          <DiaryList />
+          {/*  dummyList={data}  onEidt={onEidt} onRemove={onRemove} */}
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 

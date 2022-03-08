@@ -1,11 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryEditor = ({ onCreate }) => {
+const DiaryEditor = ({}) => {
   //   useEffect(() => {
   //     console.log("DiaryEditor 렌더");
   //   });
   // const [author, setAuthor] = useState("");
   // const [content, setContent] = useState("");
+
+  // Context에서 받아옴
+  const { onCreate } = useContext(DiaryDispatchContext);
 
   // 상태값 저장값
   const [state, setState] = useState({

@@ -1,7 +1,11 @@
+import { useContext } from "react";
+import { DiaryStateContext } from "./App";
 import DiaryItem from "./DiaryItem";
 
-const DiaryList = ({ dummyList, onRemove, onEidt }) => {
+const DiaryList = ({}) => {
   // console.log(dummyList);
+  // useContext 어떤 컨텍스트 지정으로 값을 꺼내올 수 있다.
+  const dummyList = useContext(DiaryStateContext);
   return (
     <div className="DiaryList">
       <h2>일기 리스트</h2>
@@ -9,9 +13,9 @@ const DiaryList = ({ dummyList, onRemove, onEidt }) => {
 
       <div>
         {/* id대신 (it,idx)도 사용 가능 */}
+        {/* // DiaryItem ...it 모든 데이터 전달 */}
         {dummyList.map((it) => (
-          // DiaryItem ...it 모든 데이터 전달
-          <DiaryItem key={it.id} {...it} onRemove={onRemove} onEidt={onEidt} />
+          <DiaryItem key={it.id} {...it} />
           // <div key={it.id}>
           //     <div>작성자 : {it.author}</div>
           //     <div>일기 : {it.content}</div>

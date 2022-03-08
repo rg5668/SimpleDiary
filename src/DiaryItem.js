@@ -1,17 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryItem = ({
-  author,
-  content,
-  created_date,
-  emotion,
-  id,
-  onRemove,
-  onEidt,
-}) => {
-  useEffect(() => {
-    console.log(id, "번 째 아이템 렌더!");
-  });
+const DiaryItem = ({ author, content, created_date, emotion, id }) => {
+  const { onRemove, onEidt } = useContext(DiaryDispatchContext);
+  //   useEffect(() => {
+  //     console.log(id, "번 째 아이템 렌더!");
+  //   });
 
   // true, flase true가 되면 수정 false면 content render
   const [isEdit, setIsEdit] = useState(false);
