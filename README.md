@@ -1,6 +1,6 @@
 ### 일기 리스트 (자신의 로컬에서만 작동하는 React 프로젝트)
 
-react와 js를 연결시켜 공부하기 위함으로 제작된 프로젝트입니다.
+react와 js를 공부하기 위함으로 제작된 프로젝트입니다.
 
 # Getting Started with Create React App
 
